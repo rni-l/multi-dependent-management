@@ -19,5 +19,8 @@ module.exports = {
     'no-console': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     'import/no-extraneous-dependencies': 'off',
+    'max-len': 'off',
+    'import/no-unresolved': 'off',
+    'import/extensions': 'off',
   },
 };

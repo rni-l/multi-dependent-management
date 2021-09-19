@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    "target": "ES2015",
+    "module": "commonjs",
     "strict": true,
-    "jsx": "preserve",
-    "outDir": "dist",
+    "outDir": "./dist",
     "importHelpers": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
@@ -15,13 +14,10 @@
     "types": [
       "jest",
       "node"
-    ],
-    "lib": [
-      "esnext",
-      "scripthost"
     ]
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "./dist/**/*"
   ]
 }

@@ -1,3 +1,3 @@
-const sdf = 2;
+import upgrade from './upgrade';
 
-console.log(sdf);
+upgrade();
