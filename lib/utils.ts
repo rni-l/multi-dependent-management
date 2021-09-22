@@ -9,9 +9,9 @@ import {
   ignoreNames,
 } from './config';
 
-const { MultiSelect, Confirm } = require('enquirer');
+const { Confirm } = require('enquirer');
 
-function getVersion(version: string) {
+function getVersion(version: string): string {
   return semver.coerce(version).version;
 }
 
@@ -30,7 +30,7 @@ function getPackageConfig(diffResult: { op: string; path: Array<string | number>
   };
 }
 
-function find(targetPath: string): string[] {
+function findPackageProject(targetPath: string): string[] {
   const fileStat = fs.statSync(targetPath);
   const nodeProjects: string[] = [];
   if (!fileStat.isDirectory()) return [];
@@ -40,40 +40,44 @@ function find(targetPath: string): string[] {
     if (v === 'package.json') {
       nodeProjects.push(targetPath);
     }
-    const childNodeProjects = find(curPath);
+    const childNodeProjects = findPackageProject(curPath);
     nodeProjects.push(...childNodeProjects);
   });
   return nodeProjects;
 }
 
-async function getPackagesConfig(targetPaths: string[]) {
-  const checkList: Promise<ProjectConfigType>[] = targetPaths
+async function getPackagesConfig(targetPaths: string[]): Promise<(ProjectConfigType | boolean)[]> {
+  const checkList: Promise<ProjectConfigType | boolean>[] = targetPaths
     // eslint-disable-next-line no-async-promise-executor
     .map((v) => new Promise(async (resolve) => {
-      // 分析对象项目的 package.json
-      const targetPackageJson = JSON.parse(fs.readFileSync(`${v}/package.json`, { encoding: 'utf-8' }));
-      const output: ProjectConfigType = {
-        cwd: v,
-        packageJson: targetPackageJson,
-        packages: [],
-      };
-      const ncuResult = await ncu.run({
-        packageFile: `${v}/package.json`,
-        upgrade: false,
-        jsonDeps: true,
-      });
-      const ncuObjectDependenciesResult: any = ncuResult.dependencies;
-      const ncuObjectDevDependenciesResult: any = ncuResult.devDependencies;
+      try {
+        // 分析对象项目的 package.json
+        const targetPackageJson = JSON.parse(fs.readFileSync(`${v}/package.json`, { encoding: 'utf-8' }));
+        const output: ProjectConfigType = {
+          cwd: v,
+          packageJson: targetPackageJson,
+          packages: [],
+        };
+        const ncuResult = await ncu.run({
+          packageFile: `${v}/package.json`,
+          upgrade: false,
+          jsonDeps: true,
+        });
+        const ncuObjectDependenciesResult: any = ncuResult.dependencies;
+        const ncuObjectDevDependenciesResult: any = ncuResult.devDependencies;
 
-      diff(targetPackageJson.dependencies, ncuObjectDependenciesResult).forEach((diffResult) => {
-        output.packages.push(getPackageConfig(diffResult, targetPackageJson.dependencies, false));
-      });
-      diff(targetPackageJson.devDependencies,
-        ncuObjectDevDependenciesResult).forEach((diffResult) => {
-        output.packages.push(getPackageConfig(diffResult, targetPackageJson.devDependencies, true));
-      });
+        diff(targetPackageJson.dependencies, ncuObjectDependenciesResult).forEach((diffResult) => {
+          output.packages.push(getPackageConfig(diffResult, targetPackageJson.dependencies, false));
+        });
+        diff(targetPackageJson.devDependencies,
+          ncuObjectDevDependenciesResult).forEach((diffResult) => {
+          output.packages.push(getPackageConfig(diffResult, targetPackageJson.devDependencies, true));
+        });
 
-      resolve(output);
+        resolve(output);
+      } catch (error) {
+        resolve(false);
+      }
     }));
   return Promise.all(checkList);
 }
@@ -94,7 +98,7 @@ ${v.packages.map((v2) => `  ${v2.name}@${v2.oldVersion} -> ${v2.newVersion}；${
   });
 }
 
-function updateProjectDependencies(list: ProjectConfigType[]) {
+function updateProjectDependencies(list: ProjectConfigType[]): void {
   list.forEach(({ cwd, packageJson, packages }) => {
     const data = packageJson;
     packages.forEach(({ newVersion, name, isDevDependencies }) => {
@@ -109,9 +113,10 @@ function updateProjectDependencies(list: ProjectConfigType[]) {
 }
 
 export {
+  getPackageConfig,
   getPackagesConfig,
   getVersion,
-  find,
+  findPackageProject,
   getConfirmPrompt,
   updateProjectDependencies,
 };
