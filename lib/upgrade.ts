@@ -2,7 +2,6 @@ import ora from 'ora';
 import {
   ProjectPackageType, ProjectConfigType,
 } from './types';
-import { TARGET_DIR_PATH } from './config';
 import {
   getPackagesConfig, findPackageProject, getConfirmPrompt, updateProjectDependencies,
 } from './utils';
@@ -68,9 +67,9 @@ export {
   changeChoicesToProjectConfig,
 };
 
-export default async (): Promise<void> => {
+export default async (targetPath: string): Promise<void> => {
   const spinner = ora('分析中...').start();
-  const list = await getPackagesConfig(findPackageProject(TARGET_DIR_PATH));
+  const list = await getPackagesConfig(findPackageProject(targetPath));
   spinner.succeed('分析成功\t');
   const prompt = getMultiSelectPrompt(list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[]);
   const res: ProjectConfigType[] = await prompt.run();

@@ -55,6 +55,7 @@
     "globby": "^12.0.2",
     "inquirer": "^8.1.5",
     "just-diff": "^3.1.1",
+    "minimist": "^1.2.5",
     "npm-check": "^5.9.2",
     "npm-check-updates": "^11.8.5",
     "ora": "^5.4.1",
