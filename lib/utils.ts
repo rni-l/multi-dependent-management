@@ -46,7 +46,7 @@ function findPackageProject(targetPath: string): string[] {
   return nodeProjects;
 }
 
-async function getPackagesConfig(targetPaths: string[]): Promise<(ProjectConfigType | boolean)[]> {
+async function getPackagesConfig(targetPaths: string[], isCheckUpdate?: boolean): Promise<(ProjectConfigType | boolean)[]> {
   const checkList: Promise<ProjectConfigType | boolean>[] = targetPaths
     // eslint-disable-next-line no-async-promise-executor
     .map((v) => new Promise(async (resolve) => {
@@ -58,21 +58,23 @@ async function getPackagesConfig(targetPaths: string[]): Promise<(ProjectConfigT
           packageJson: targetPackageJson,
           packages: [],
         };
-        const ncuResult = await ncu.run({
-          packageFile: `${v}/package.json`,
-          upgrade: false,
-          jsonDeps: true,
-        });
-        const ncuObjectDependenciesResult: any = ncuResult.dependencies;
-        const ncuObjectDevDependenciesResult: any = ncuResult.devDependencies;
+        if (isCheckUpdate) {
+          const ncuResult = await ncu.run({
+            packageFile: `${v}/package.json`,
+            upgrade: false,
+            jsonDeps: true,
+          });
+          const ncuObjectDependenciesResult: any = ncuResult.dependencies;
+          const ncuObjectDevDependenciesResult: any = ncuResult.devDependencies;
 
-        diff(targetPackageJson.dependencies, ncuObjectDependenciesResult).forEach((diffResult) => {
-          output.packages.push(getPackageConfig(diffResult, targetPackageJson.dependencies, false));
-        });
-        diff(targetPackageJson.devDependencies,
-          ncuObjectDevDependenciesResult).forEach((diffResult) => {
-          output.packages.push(getPackageConfig(diffResult, targetPackageJson.devDependencies, true));
-        });
+          diff(targetPackageJson.dependencies, ncuObjectDependenciesResult).forEach((diffResult) => {
+            output.packages.push(getPackageConfig(diffResult, targetPackageJson.dependencies, false));
+          });
+          diff(targetPackageJson.devDependencies,
+            ncuObjectDevDependenciesResult).forEach((diffResult) => {
+            output.packages.push(getPackageConfig(diffResult, targetPackageJson.devDependencies, true));
+          });
+        }
 
         resolve(output);
       } catch (error) {

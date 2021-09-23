@@ -7,7 +7,6 @@ import { p1, p2, maxVersion } from './mockData/packageJsonData';
 
 jest.mock('fs');
 jest.mock('npm-check-updates');
-jest.mock('enquirer');
 
 describe('test lib/utils.ts', () => {
   describe('getVersion', () => {
@@ -129,7 +128,7 @@ describe('test lib/utils.ts', () => {
           'package.json': JSON.stringify(p2),
         },
       }, '/abc');
-      const res = await getPackagesConfig(['/abc/p1', '/abc/p2']);
+      const res = await getPackagesConfig(['/abc/p1', '/abc/p2'], true);
       expect(res.length).toBe(2);
       expect(res[0]).toMatchObject({
         cwd: '/abc/p1',
@@ -208,9 +207,9 @@ describe('test lib/utils.ts', () => {
           'package.json': JSON.stringify(p2),
         },
       }, '/abc');
-      const list = await getPackagesConfig(['/abc/p1', '/abc/p2']);
-      const ins = getConfirmPrompt(list as ProjectConfigType[]);
-      expect(ins.getMsg()).toBe(`
+      const list = await getPackagesConfig(['/abc/p1', '/abc/p2'], true);
+      const prompt = getConfirmPrompt(list as ProjectConfigType[]);
+      expect(prompt.state.message).toBe(`
 将会更新以下依赖：
 
 更新项目：/abc/p1
@@ -243,7 +242,7 @@ describe('test lib/utils.ts', () => {
           'package.json': JSON.stringify(p2),
         },
       }, '/abc');
-      const list = await getPackagesConfig(['/abc/p1', '/abc/p2']);
+      const list = await getPackagesConfig(['/abc/p1', '/abc/p2'], true);
       updateProjectDependencies(list as ProjectConfigType[]);
       const p1Data = JSON.parse(vol.readFileSync('/abc/p1/package.json', { encoding: 'utf-8' }) as string);
       expect(p1Data.dependencies.a1).toBe(maxVersion.a1);

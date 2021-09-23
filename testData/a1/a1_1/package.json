@@ -1,19 +1,15 @@
 {
-	"name": "a2",
-	"version": "1.0.0",
-	"dependencies": {
-		"vue": "^2.6.12",
-		"vue-class-component": "^7.2.6",
-		"vue-i18n": "8",
-		"vue-loader": "^16.2.0",
-		"vue-router": "^3.5.1",
-		"vuex": "^3.6.2",
-		"vuex-class": "^0.3.2"
-	},
-	"devDependencies": {
-		"node-sass": "^6.0.0",
-		"npm": "^7.13.0"
-	}
+  "name": "a2",
+  "version": "1.0.0",
+  "dependencies": {
+    "vue-class-component": "^7.2.6",
+    "vue-i18n": "8",
+    "vue-loader": "^16.2.0",
+    "vue-router": "^3.5.1",
+    "vuex": "^3.6.2",
+    "vuex-class": "^0.3.2"
+  },
+  "devDependencies": {
+    "node-sass": "^6.0.0"
+  }
 }
-
-

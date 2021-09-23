@@ -5,7 +5,7 @@
 const isSimple = process.env.JEST_IS_SIMPLE === '0';
 export default {
   // All imported modules in your tests should be mocked automatically
-  // automock: false,
+  automock: false,
 
   // Stop running tests after `n` failures
   // bail: 0,

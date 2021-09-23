@@ -3,14 +3,18 @@ import {
   ProjectPackageType, ProjectConfigType,
 } from './types';
 import {
-  getPackagesConfig, findPackageProject, getConfirmPrompt, updateProjectDependencies,
+  getPackagesConfig,
+  findPackageProject,
+  getConfirmPrompt,
+  updateProjectDependencies,
 } from './utils';
+import * as upgradeUtils from './upgrade';
 
 const { MultiSelect } = require('enquirer');
 
 type ChoiceItem = { name: string; projectCdw: string; updateName: string; }
 
-function getChoices(list: ProjectConfigType[]): ChoiceItem[] {
+export function getChoices(list: ProjectConfigType[]): ChoiceItem[] {
   return list.reduce((acc: ChoiceItem[], v) => {
     v.packages.forEach((p) => {
       acc.push({
@@ -23,11 +27,11 @@ function getChoices(list: ProjectConfigType[]): ChoiceItem[] {
   }, []);
 }
 
-function changeChoicesToProjectConfig(selectNames: string[],
+export function changeChoicesToProjectConfig(selectNames: string[],
   rawProjectConfig: ProjectConfigType[]): ProjectConfigType[] {
   const choices = getChoices(rawProjectConfig);
   return selectNames.reduce((acc: ProjectConfigType[], v) => {
-    const choicesObj = choices.find((v3) => v === v3.name);
+    const choicesObj = choices.find((v2) => v === v2.name);
     const listObj = rawProjectConfig.find((v2) => v2.cwd === choicesObj?.projectCdw) as ProjectConfigType;
     const dependenciesObj = listObj
       .packages.find((v2) => v2.name === choicesObj?.updateName) as ProjectPackageType;
@@ -47,10 +51,11 @@ function changeChoicesToProjectConfig(selectNames: string[],
   }, []);
 }
 
-function getMultiSelectPrompt(list: ProjectConfigType[]): any {
+export function getMultiSelectPrompt(list: ProjectConfigType[], options?: any): any {
   const choices = getChoices(list);
   return new MultiSelect(
     {
+      ...options,
       choices,
       name: 'target',
       message: `需要更新的依赖(${choices.length})`,
@@ -61,22 +66,16 @@ function getMultiSelectPrompt(list: ProjectConfigType[]): any {
   );
 }
 
-export {
-  getChoices,
-  getMultiSelectPrompt,
-  changeChoicesToProjectConfig,
-};
-
-export default async (targetPath: string): Promise<void> => {
+export async function upgrade(targetPath: string): Promise<void> {
   const spinner = ora('分析中...').start();
-  const list = await getPackagesConfig(findPackageProject(targetPath));
+  const list = await getPackagesConfig(findPackageProject(targetPath), true);
   spinner.succeed('分析成功\t');
-  const prompt = getMultiSelectPrompt(list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[]);
+  // 为了 unit test 更方便 mock，所有这样写
+  const prompt = upgradeUtils.getMultiSelectPrompt(list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[]);
   const res: ProjectConfigType[] = await prompt.run();
-  const prompt2 = getConfirmPrompt(res);
-  const res2 = await prompt2.run();
+  const res2 = await getConfirmPrompt(res).run();
   if (res2) {
     updateProjectDependencies(res);
     console.log('处理成功!!!');
   }
-};
+}
