@@ -1,2 +1,6 @@
 *.json
 dist
+demo
+node_modules
+coverage
+.husky

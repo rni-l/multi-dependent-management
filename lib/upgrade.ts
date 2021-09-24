@@ -1,4 +1,5 @@
 import ora from 'ora';
+import chalk from 'chalk';
 import {
   ProjectPackageType, ProjectConfigType,
 } from './types';
@@ -76,6 +77,6 @@ export async function upgrade(targetPath: string): Promise<void> {
   const res2 = await getConfirmPrompt(res).run();
   if (res2) {
     updateProjectDependencies(res);
-    console.log('处理成功!!!');
+    console.log(chalk.green('\n升级成功!!!'));
   }
 }

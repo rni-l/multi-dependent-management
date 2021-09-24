@@ -1,5 +1,6 @@
 import ora from 'ora';
 import fs from 'fs';
+import chalk from 'chalk';
 import {
   ProjectConfigType,
 } from './types';
@@ -87,18 +88,20 @@ export function removeProjectDependencies(list: ProjectConfigType[], removePacka
         delete data.devDependencies[v];
       }
     });
+    console.log(chalk.blue(`正在移除 ${cwd} 的 ${removePackages.join(', ')}`));
     fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(data, null, '  '));
+    console.log(chalk.green(`${cwd} 移除完成~`));
   });
 }
 
 export async function remove(targetPath: string): Promise<void> {
   const removePackages = await getRemovePackages();
-  console.log(`要移除的依赖有：\n  ${removePackages.join('\n  ')}`);
+  console.log(chalk.red(`要移除的依赖有：\n  ${removePackages.join('\n  ')}`));
   const spinner = ora('分析中...').start();
   const list = await getPackagesConfig(findPackageProject(targetPath));
   const filterList = list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[];
   spinner.succeed('分析成功\t');
   const res: ProjectConfigType[] = await removeUtils.getMultiSelectPrompt(filterList, removePackages).run();
   removeProjectDependencies(res, removePackages);
-  console.log('移除成功');
+  console.log(chalk.red('\n全部移除成功!!!'));
 }

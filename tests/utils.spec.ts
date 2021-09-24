@@ -1,4 +1,5 @@
 import { vol } from 'memfs';
+import { omit } from 'lodash';
 import { ProjectConfigType } from '../lib/types';
 import {
   getPackageConfig, getVersion, findPackageProject, getPackagesConfig, updateProjectDependencies, getConfirmPrompt,
@@ -181,6 +182,29 @@ describe('test lib/utils.ts', () => {
             isDevDependencies: true,
           },
         ],
+      });
+    });
+
+    it('解析目标路径的 package.json 文件，dependencies 和 devDependencies 都为空，返回空', async () => {
+      vol.fromNestedJSON({
+        p1: {
+          'package.json': JSON.stringify(omit(p1, ['dependencies', 'devDependencies'])),
+        },
+        p2: {
+          'package.json': JSON.stringify(omit(p2, ['dependencies', 'devDependencies'])),
+        },
+      }, '/abc');
+      const res = await getPackagesConfig(['/abc/p1', '/abc/p2'], true);
+      expect(res.length).toBe(2);
+      expect(res[0]).toMatchObject({
+        cwd: '/abc/p1',
+        packageJson: omit(p1, ['dependencies', 'devDependencies']),
+        packages: [],
+      });
+      expect(res[1]).toMatchObject({
+        cwd: '/abc/p2',
+        packageJson: omit(p2, ['dependencies', 'devDependencies']),
+        packages: [],
       });
     });
 

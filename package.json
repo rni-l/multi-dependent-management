@@ -17,7 +17,7 @@
     "lint-staged": "lint-staged",
     "clean-dist": "node scripts/clean.js",
     "test:unit": "jest",
-    "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/updateSpecify.spec.ts"
+    "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/utils.spec.ts"
   },
   "repository": {
     "type": "git",
@@ -31,9 +31,10 @@
   "homepage": "https://github.com/rni-l/multi-dependent-management#readme",
   "files": [
     "dist",
-    "types",
     "README.md",
-    "scripts"
+    "scripts",
+    "lib",
+    "tests"
   ],
   "config": {
     "commitizen": {
@@ -58,6 +59,7 @@
     "globby": "^12.0.2",
     "inquirer": "^8.1.5",
     "just-diff": "^3.1.1",
+    "lodash": "^4.17.21",
     "minimist": "^1.2.5",
     "npm-check": "^5.9.2",
     "npm-check-updates": "^11.8.5",

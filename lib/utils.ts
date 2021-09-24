@@ -2,6 +2,7 @@ import fs from 'fs';
 import semver from 'semver';
 import ncu from 'npm-check-updates';
 import { diff } from 'just-diff';
+import chalk from 'chalk';
 import {
   ObjectKey, ProjectPackageType, ProjectConfigType,
 } from './types';
@@ -55,7 +56,11 @@ async function getPackagesConfig(targetPaths: string[], isCheckUpdate?: boolean)
         const targetPackageJson = JSON.parse(fs.readFileSync(`${v}/package.json`, { encoding: 'utf-8' }));
         const output: ProjectConfigType = {
           cwd: v,
-          packageJson: targetPackageJson,
+          packageJson: {
+            ...targetPackageJson,
+            dependencies: targetPackageJson.dependencies || {},
+            devDependencies: targetPackageJson.devDependencies || {},
+          },
           packages: [],
         };
         if (isCheckUpdate) {
@@ -67,13 +72,17 @@ async function getPackagesConfig(targetPaths: string[], isCheckUpdate?: boolean)
           const ncuObjectDependenciesResult: any = ncuResult.dependencies;
           const ncuObjectDevDependenciesResult: any = ncuResult.devDependencies;
 
-          diff(targetPackageJson.dependencies, ncuObjectDependenciesResult).forEach((diffResult) => {
-            output.packages.push(getPackageConfig(diffResult, targetPackageJson.dependencies, false));
-          });
-          diff(targetPackageJson.devDependencies,
-            ncuObjectDevDependenciesResult).forEach((diffResult) => {
-            output.packages.push(getPackageConfig(diffResult, targetPackageJson.devDependencies, true));
-          });
+          if (targetPackageJson.dependencies) {
+            diff(targetPackageJson.dependencies, ncuObjectDependenciesResult).forEach((diffResult) => {
+              output.packages.push(getPackageConfig(diffResult, targetPackageJson.dependencies, false));
+            });
+          }
+          if (targetPackageJson.devDependencies) {
+            diff(targetPackageJson.devDependencies,
+              ncuObjectDevDependenciesResult).forEach((diffResult) => {
+              output.packages.push(getPackageConfig(diffResult, targetPackageJson.devDependencies, true));
+            });
+          }
         }
 
         resolve(output);
@@ -110,7 +119,9 @@ function updateProjectDependencies(list: ProjectConfigType[]): void {
         data.dependencies[name] = newVersion;
       }
     });
+    console.log(chalk.blue(`正在升级 ${cwd}`));
     fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(data, null, '  '));
+    console.log(chalk.green(`${cwd} 升级完成~`));
   });
 }
 

@@ -1,4 +1,5 @@
 import ora from 'ora';
+import chalk from 'chalk';
 import {
   ProjectConfigType,
 } from './types';
@@ -98,6 +99,7 @@ export function updateProjectDependencies(
   const isAddCommander = isAdd ? '' : '--package-lock-only';
   const task = list.map(({ cwd }) => () => {
     shell.cd(cwd);
+    console.log(chalk.blue(`正在更新：${cwd} \n`));
     if (dependencies.length) {
       const dependenciesTxt = `npm i ${dependencies.join(' ')} -S ${isAddCommander}`;
       shell.exec(dependenciesTxt);
@@ -125,5 +127,5 @@ export async function updateSpecify(targetPath: string): Promise<void> {
   spinner.succeed('分析成功\t');
   const res: ProjectConfigType[] = await updateSpecifyUtils.getMultiSelectPrompt(filterList).run();
   updateProjectDependencies(res, dependencies, devDependencies, install === '是');
-  console.log('更新成功');
+  console.log(chalk.green('更新成功!!!'));
 }

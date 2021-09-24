@@ -4,7 +4,7 @@
 
 ## 概述
 
-该工具是用于管理多个项目的依赖，根据你输入的路径，递归查询所有的 `package.json`，进行依赖管理：
+该工具是用于管理多个项目的依赖，根据你输入的路径，递归查询所有的 `package.json`（忽略 `node_modules` 文件），进行依赖管理：
 
 1. 依赖版本升级（基于 [npm-check-updates](https://github.com/raineorshine/npm-check-updates)）
 2. 依赖移除
@@ -28,9 +28,70 @@ npm i multi-dependent-management -g
 
 ### 依赖版本升级
 
+```shell
+# -p 后面带你要执行的项目路径
+mdm upgrade -p ./project
+```
+
+![](./docs/assets/upgrade01.gif)
+
+首先会递归查询该路径下所有的 `package.json` 文件，然后使用 [npm-check-updates](https://github.com/raineorshine/npm-check-updates) 检查每个项目的依赖版本是否最新，将可以更新的依赖一一展现出来，让你选择哪个依赖需要更新：
+
+![](./docs/assets/upgrade02.jpg)
+
+当你确定升级后，这个工具只会帮你修改 `package.json` 的配置，不会执行 `npm i ` 去安装依赖。
+
+
+
 ### 依赖移除
 
+```shell
+# -p 后面带你要执行的项目路径
+mdm remove -p ./project
+```
+
+![](./docs/assets/remove01.gif)
+
+首先会让你输入要移除的依赖，使用 `,` 分隔每个依赖名。
+
+接着会递归查询该路径下所有的 `package.json` 文件，让你选择哪个项目需要移除依赖。
+
+
+
+
 ### 依赖添加/变更
+
+```shell
+# -p 后面带你要执行的项目路径
+mdm update -p ./project
+```
+
+![](./docs/assets/update01.gif)
+
+首先会让你输入要更新的依赖，使用 `,` 分隔每个依赖名。
+
+接着会让你选择是否安装依赖:
+
+![](./docs/assets/update02.jpg)
+
+如果选择“是”，则会执行 `npm install {package}`，
+
+否则执行：`npm install {package} --package-lock-only`，
+
+最后会递归查询该路径下所有的 `package.json` 文件，让你选择哪个项目需要更新依赖。
+
+变更操作，会使用 `npm install` 进行依赖变更，而不是直接修改 `package.json` 文件，保证包名的顺序一致。
+
+
+
+## 应用场景
+
+要开发这个工具的原因是因为在日程开发中，有大量类似的业务管理系统，这些系统都使用内部的组件库进行搭建的：
+
+![](./docs/assets/p1.jpg)
+
+目前大概有 20 多个这样的系统，分别使用了不同的公共库。如果公共库出现了问题或者有新的功能迭代，系统的更新操作就很麻烦，需要一个个项目执行更新命令，所以我开发了这个工具，对多个项目快速进行依赖变更。
+
 
 
 
