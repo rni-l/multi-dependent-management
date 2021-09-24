@@ -1,9 +1,12 @@
 {
   "name": "multi-dependent-management",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "dist/index.js",
-  "bin": "dist/index.js",
+  "bin": {
+    "multi-dependent-management": "dist/index.js",
+    "mdm": "dist/index.js"
+  },
   "scripts": {
     "lint": "eslint --fix lib",
     "tsc": "tsc",
@@ -21,7 +24,7 @@
     "url": "git+https://github.com/rni-l/multi-dependent-management.git"
   },
   "author": "Rni-L",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/rni-l/multi-dependent-management/issues"
   },
