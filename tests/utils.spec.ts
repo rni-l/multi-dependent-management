@@ -2,7 +2,7 @@ import { vol } from 'memfs';
 import { omit } from 'lodash';
 import { ProjectConfigType } from '../lib/types';
 import {
-  getPackageConfig, getVersion, findPackageProject, getPackagesConfig, updateProjectDependencies, getConfirmPrompt,
+  getPackageConfig, getVersion, findPackageProject, getPackagesConfig, updateProjectDependencies, getConfirmPrompt, commonChangeChoicesToProjectConfig, getMultiSelectPrompt, commonGetChoices,
 } from '../lib/utils';
 import { p1, p2, maxVersion } from './mockData/packageJsonData';
 
@@ -276,6 +276,97 @@ describe('test lib/utils.ts', () => {
       expect(p2Data.dependencies.a1).toBe(maxVersion.a1);
       expect(p2Data.dependencies.a2).toBe(maxVersion.a2);
       expect(p2Data.devDependencies.a3).toBe(maxVersion.a3);
+    });
+  });
+
+  describe('', () => {
+    beforeEach(() => {
+      vol.reset();
+      vol.fromNestedJSON({
+        p1: {
+          'package.json': JSON.stringify(p1),
+        },
+        p2: {
+          'package.json': JSON.stringify(p2),
+        },
+      }, '/abc');
+    });
+    describe('commonGetChoices', () => {
+      it('获取 enquirer MultiSelect 的选项', async () => {
+        const list = (await getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
+        const res = commonGetChoices(list);
+        expect(res).toMatchObject([
+          {
+            name: '/abc/p1',
+            cwd: '/abc/p1',
+          },
+          {
+            name: '/abc/p2',
+            cwd: '/abc/p2',
+          },
+        ]);
+      });
+    });
+
+    describe('commonChangeChoicesToProjectConfig', () => {
+      it('将 MultiSelect 选项值转为包信息', async () => {
+        const list = (await getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
+        const res = commonChangeChoicesToProjectConfig(
+          ['/abc/p1', '/abc/p2'],
+          list,
+        );
+        expect(res).toMatchObject(list);
+      });
+    });
+
+    describe('getMultiSelectPrompt', () => {
+      it('将 MultiSelect 选项值转为包信息', async () => {
+        const list = (await getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
+        const prompt = getMultiSelectPrompt(
+          list,
+          {
+            opts: { show: false, message: '选择要更新对应依赖的项目' },
+          },
+        );
+        expect(prompt.options.message).toBe('选择要更新对应依赖的项目');
+        prompt.on('run', async () => {
+          await prompt.keypress(' ');
+          await prompt.keypress(null, { name: 'down' });
+          await prompt.keypress(' ');
+          await prompt.submit();
+        });
+        prompt.run()
+          .then((res) => {
+            expect(res).toMatchObject([
+              {
+                cwd: '/abc/p1',
+                packageJson: p1,
+                packages: [],
+              },
+              {
+                cwd: '/abc/p2',
+                packageJson: p2,
+                packages: [],
+              },
+            ]);
+          });
+      });
+      it('没有选择，返回 []', async () => {
+        const list = (await getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
+        const prompt = getMultiSelectPrompt(
+          list,
+          {
+            opts: { show: false },
+          },
+        );
+        prompt.on('run', async () => {
+          await prompt.submit();
+        });
+        prompt.run()
+          .then((res) => {
+            expect(res).toMatchObject([]);
+          });
+      });
     });
   });
 });

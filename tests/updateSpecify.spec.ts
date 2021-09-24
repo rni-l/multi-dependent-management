@@ -51,85 +51,6 @@ describe('test lib/updateSpecify.ts', () => {
     });
   });
 
-  describe('getChoices', () => {
-    it('获取 enquirer MultiSelect 的选项', async () => {
-      const list = (await utils.getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
-      const res = updateSpecifyUtils.getChoices(list);
-      expect(res).toMatchObject([
-        {
-          name: '/abc/p1',
-          cwd: '/abc/p1',
-        },
-        {
-          name: '/abc/p2',
-          cwd: '/abc/p2',
-        },
-      ]);
-    });
-  });
-
-  describe('changeChoicesToProjectConfig', () => {
-    it('将 MultiSelect 选项值转为包信息', async () => {
-      const list = (await utils.getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
-      const res = updateSpecifyUtils.changeChoicesToProjectConfig(
-        ['/abc/p1', '/abc/p2'],
-        list,
-      );
-      expect(res).toMatchObject(list);
-    });
-  });
-
-  describe('getMultiSelectPrompt', () => {
-    it('将 MultiSelect 选项值转为包信息', async () => {
-      const list = (await utils.getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
-      const prompt = updateSpecifyUtils.getMultiSelectPrompt(
-        list,
-        {
-          show: false,
-        },
-      );
-      expect(prompt.options.message).toBe('选择要更新对应依赖的项目');
-      prompt.on('run', async () => {
-        await prompt.keypress(' ');
-        await prompt.keypress(null, { name: 'down' });
-        await prompt.keypress(' ');
-        await prompt.submit();
-      });
-      prompt.run()
-        .then((res) => {
-          expect(res).toMatchObject([
-            {
-              cwd: '/abc/p1',
-              packageJson: p1,
-              packages: [],
-            },
-            {
-              cwd: '/abc/p2',
-              packageJson: p2,
-              packages: [],
-            },
-          ]);
-        });
-    });
-    it('没有选择，返回 []', async () => {
-      const list = (await utils.getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
-      const prompt = updateSpecifyUtils.getMultiSelectPrompt(
-        list,
-        {
-          show: false,
-        },
-      );
-      expect(prompt.options.message).toBe('选择要更新对应依赖的项目');
-      prompt.on('run', async () => {
-        await prompt.submit();
-      });
-      prompt.run()
-        .then((res) => {
-          expect(res).toMatchObject([]);
-        });
-    });
-  });
-
   describe('updateProjectDependencies', () => {
     // beforeAll(() => {
     // });
@@ -156,7 +77,7 @@ describe('test lib/updateSpecify.ts', () => {
       jest.resetModules();
     });
     it('更新对应依赖', async () => {
-      jest.spyOn(updateSpecifyUtils, 'getMultiSelectPrompt').mockImplementation(() => ({
+      jest.spyOn(utils, 'getMultiSelectPrompt').mockImplementation(() => ({
         run: () => Promise.resolve([
           {
             cwd: '/abc/p1',

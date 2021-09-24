@@ -1,4 +1,3 @@
-import ora from 'ora';
 import fs from 'fs';
 import chalk from 'chalk';
 import {
@@ -7,10 +6,11 @@ import {
 import {
   getPackagesConfig,
   findPackageProject,
+  getMultiSelectPrompt,
 } from './utils';
 import * as removeUtils from './remove';
 
-const { Input, MultiSelect } = require('enquirer');
+const { Input } = require('enquirer');
 
 export function getRemovePackageTxt(opts?: any): any {
   return new Input({
@@ -62,21 +62,6 @@ export function changeChoicesToProjectConfig(selectNames: string[],
   }, []);
 }
 
-export function getMultiSelectPrompt(list: ProjectConfigType[], removePackages: string[], opts?: any): any {
-  const choices = getChoices(list, removePackages);
-  return new MultiSelect(
-    {
-      ...opts,
-      choices,
-      name: 'target',
-      message: '选择移除对应依赖的项目',
-      result(names: string[]) {
-        return changeChoicesToProjectConfig(names, list, removePackages);
-      },
-    },
-  );
-}
-
 export function removeProjectDependencies(list: ProjectConfigType[], removePackages: string[]): void {
   list.forEach(({ cwd, packageJson }) => {
     const data = packageJson;
@@ -97,11 +82,18 @@ export function removeProjectDependencies(list: ProjectConfigType[], removePacka
 export async function remove(targetPath: string): Promise<void> {
   const removePackages = await getRemovePackages();
   console.log(chalk.red(`要移除的依赖有：\n  ${removePackages.join('\n  ')}`));
-  const spinner = ora('分析中...').start();
   const list = await getPackagesConfig(findPackageProject(targetPath));
   const filterList = list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[];
-  spinner.succeed('分析成功\t');
-  const res: ProjectConfigType[] = await removeUtils.getMultiSelectPrompt(filterList, removePackages).run();
+  const res: ProjectConfigType[] = await getMultiSelectPrompt(
+    filterList,
+    {
+      getChoices,
+      changeChoicesToProjectConfig,
+      opts: { message: '选择移除对应依赖的项目' },
+    },
+    removePackages,
+  ).run();
+  // removeUtils.getMultiSelectPrompt(filterList, removePackages).run();
   removeProjectDependencies(res, removePackages);
   console.log(chalk.red('\n全部移除成功!!!'));
 }

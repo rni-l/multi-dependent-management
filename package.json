@@ -42,12 +42,9 @@
     }
   },
   "lint-staged": {
-    "lib/**/*": [
+    "{lib,tests}/**/*": [
       "npm run lint",
-      "git add"
-    ],
-    "tests/**/*.{js,ts}": [
-      "npm run lint",
+      "npm run test:unit",
       "git add"
     ]
   },

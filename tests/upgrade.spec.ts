@@ -85,57 +85,12 @@ describe('test lib/upgrade', () => {
     });
   });
 
-  describe('getMultiSelectPrompt', () => {
-    it('使用 enquirer 的 MultiSelect，显示可以更新的包', (done) => {
-      utils.getPackagesConfig(['/abc/p1', '/abc/p2'], true).then((list) => {
-        const prompt = upgradeUtils.getMultiSelectPrompt(list as ProjectConfigType[], { show: false });
-        prompt.on('run', () => {
-          expect(prompt.options.message).toBe('需要更新的依赖(5)');
-          expect(prompt.choices).toMatchObject([
-            {
-              name: '/abc/p1 - a2 - ~2.2.0 -> 2.3.3',
-              projectCdw: '/abc/p1',
-              updateName: 'a2',
-              enabled: false,
-            },
-            {
-              name: '/abc/p1 - a3 - 1.2.0 -> 2.4.0',
-              projectCdw: '/abc/p1',
-              updateName: 'a3',
-              enabled: false,
-            },
-            {
-              name: '/abc/p2 - a1 - 2.0.0 -> 2.1.0',
-              projectCdw: '/abc/p2',
-              updateName: 'a1',
-              enabled: false,
-            },
-            {
-              name: '/abc/p2 - a2 - ~2.3.0 -> 2.3.3',
-              projectCdw: '/abc/p2',
-              updateName: 'a2',
-              enabled: false,
-            },
-            {
-              name: '/abc/p2 - a3 - 1.2.0 -> 2.4.0',
-              projectCdw: '/abc/p2',
-              updateName: 'a3',
-              enabled: false,
-            },
-          ]);
-          done();
-        });
-        prompt.run().catch();
-      });
-    });
-  });
-
   describe('upgrade', () => {
     afterEach(() => {
       jest.resetModules();
     });
     it('确认更新所有的依赖', async () => {
-      jest.spyOn(upgradeUtils, 'getMultiSelectPrompt').mockImplementation(() => ({
+      jest.spyOn(utils, 'getMultiSelectPrompt').mockImplementation(() => ({
         run: () => Promise.resolve([
           {
             cwd: '/abc/p1',

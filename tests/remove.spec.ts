@@ -105,59 +105,6 @@ describe('test lib/remove.ts', () => {
     });
   });
 
-  describe('getMultiSelectPrompt', () => {
-    it('将 MultiSelect 选项值转为包信息', async () => {
-      const list = (await utils.getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
-      const prompt = removeUtils.getMultiSelectPrompt(
-        list,
-        ['a4', 'a3'],
-        {
-          show: false,
-        },
-      );
-      expect(prompt.options.message).toBe('选择移除对应依赖的项目');
-      prompt.on('run', async () => {
-        await prompt.keypress(' ');
-        await prompt.keypress(null, { name: 'down' });
-        await prompt.keypress(' ');
-        await prompt.submit();
-      });
-      prompt.run()
-        .then((res) => {
-          expect(res).toMatchObject([
-            {
-              cwd: '/abc/p1',
-              packageJson: p1,
-              packages: [],
-            },
-            {
-              cwd: '/abc/p2',
-              packageJson: p2,
-              packages: [],
-            },
-          ]);
-        });
-    });
-    it('没有选择，返回 []', async () => {
-      const list = (await utils.getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
-      const prompt = removeUtils.getMultiSelectPrompt(
-        list,
-        ['a4', 'a3'],
-        {
-          show: false,
-        },
-      );
-      expect(prompt.options.message).toBe('选择移除对应依赖的项目');
-      prompt.on('run', async () => {
-        await prompt.submit();
-      });
-      prompt.run()
-        .then((res) => {
-          expect(res).toMatchObject([]);
-        });
-    });
-  });
-
   describe('removeProjectDependencies', () => {
     it('根据要移除的依赖信息，修改对应项目的 package.json', async () => {
       const list = (await utils.getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
@@ -178,7 +125,7 @@ describe('test lib/remove.ts', () => {
       jest.resetModules();
     });
     it('移除对应依赖', async () => {
-      jest.spyOn(removeUtils, 'getMultiSelectPrompt').mockImplementation(() => ({
+      jest.spyOn(utils, 'getMultiSelectPrompt').mockImplementation(() => ({
         run: () => Promise.resolve([
           {
             cwd: '/abc/p1',
