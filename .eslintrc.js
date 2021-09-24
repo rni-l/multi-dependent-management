@@ -24,5 +24,6 @@ module.exports = {
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
   },
 };
