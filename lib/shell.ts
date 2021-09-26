@@ -23,27 +23,33 @@ export function getCommanders(shellTxt?: string) {
   return shellTxt.split('\n').map((v) => (v ? v.trim() : '')).filter((v) => v);
 }
 
-export function getConfirmIsEnterIndependentCommander() {
+export function getConfirmIsEnterIndependentCommander(opts?: any) {
   return new Confirm({
+    ...opts,
     name: 'isEnter',
     message: '是否为各个项目输入独立执行命令？',
   });
 }
 
-export function getConfirmIsExecute() {
+export function getConfirmIsExecute(opts?: any) {
   return new Confirm({
+    ...opts,
     name: 'isExecute',
     message: '查看命令清单，确认是否要执行？',
   });
 }
 
-export async function executeTask<T>(tasks: Task<T>[]): Promise<T[]> {
-  const output: T[] = [];
+export async function executeTask<T>(tasks: Task<(T | undefined)>[]): Promise<(T | undefined)[]> {
+  const output: (T | undefined)[] = [];
   if (tasks.length) {
     const task = tasks[0];
-    const res = await task();
+    try {
+      const res = await task();
+      output.push(res);
+    } catch (error) {
+      output.push(undefined);
+    }
     tasks.shift();
-    output.push(res);
     const res2 = await executeTask(tasks);
     output.push(...res2);
   }
@@ -52,7 +58,7 @@ export async function executeTask<T>(tasks: Task<T>[]): Promise<T[]> {
 
 export async function getIndependentCommanders(list: ProjectConfigType[]) {
   const res = await executeTask(list.map((v) => async () => {
-    const shellTxt = await getInput({
+    const shellTxt = await shellUtils.getInput({
       message: `请输入要执行的命令.(${v.cwd})`,
     }).run();
     return getCommanders(shellTxt);
@@ -88,7 +94,7 @@ export function getTasks(
 export function getExecuteCommandersTxt(
   list: ProjectConfigType[],
   commonCommanders: string[],
-  independentCommanders: string[][],
+  independentCommanders: (string)[][],
 ) {
   return list.map((v, i) => `
 ---- ${v.cwd} ----
@@ -98,7 +104,7 @@ ${independentCommanders[i]?.join('\n')}
 `).join('\n');
 }
 
-export async function executeShell(targetPath: string) {
+export async function getMultiList(targetPath: string) {
   const list = await getPackagesConfig(findPackageProject(targetPath));
   const filterList = list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[];
   const selectList: ProjectConfigType[] = await getMultiSelectPrompt(
@@ -107,14 +113,20 @@ export async function executeShell(targetPath: string) {
       opts: { message: '选择要执行的项目' },
     },
   ).run();
+  return selectList;
+}
+
+export async function executeShell(targetPath: string) {
+  const selectList = await shellUtils.getMultiList(targetPath);
   const commonShell = await shellUtils.getInput({
     message: `${INPUT_TXT}(选择的项目都会执行)`,
   }).run();
   const commonCommanders = shellUtils.getCommanders(commonShell);
   const isEnter = await shellUtils.getConfirmIsEnterIndependentCommander().run();
-  let independentCommanders: string[][] = [];
+  let independentCommanders: (string)[][] = [];
   if (isEnter) {
-    independentCommanders = await shellUtils.getIndependentCommanders(selectList);
+    const tmp = await shellUtils.getIndependentCommanders(selectList);
+    independentCommanders = tmp.map((v) => v || []);
   }
 
   console.log(`\n${getExecuteCommandersTxt(selectList, commonCommanders, independentCommanders)}`);

@@ -10,17 +10,11 @@ import {
 import * as updateSpecifyUtils from './updateSpecify';
 
 const shell = require('shelljs');
-const { prompt } = require('enquirer');
+const { Form, Select } = require('enquirer');
 
-export function getUpdatePackageTxt(opts?: any): Promise<
-  {
-    update: { dependencies: string; devDependencies: string; };
-    install: string;
-  }
-> {
-  // eslint-disable-next-line new-cap
-  return prompt([
-    {
+export function getUpdatePackagePrompt(opts?: any) {
+  return {
+    formPrompt: new Form({
       ...opts,
       type: 'form',
       name: 'update',
@@ -29,15 +23,29 @@ export function getUpdatePackageTxt(opts?: any): Promise<
         { name: 'dependencies', message: 'dependencies 依赖' },
         { name: 'devDependencies', message: 'devDependencies 依赖' },
       ],
-    },
-    {
+    }),
+    selectPrompt: new Select({
       ...opts,
       type: 'select',
       name: 'install',
       message: '是否安装依赖到 node_module:',
       choices: ['是', '否'],
-    },
-  ]);
+    }),
+  };
+}
+
+export async function getUpdatePackageTxt(): Promise<
+{
+  update: { dependencies: string; devDependencies: string; };
+  install: string;
+}> {
+  const { formPrompt, selectPrompt } = updateSpecifyUtils.getUpdatePackagePrompt();
+  const update = await formPrompt.run();
+  const install = await selectPrompt.run();
+  return {
+    update,
+    install,
+  };
 }
 
 export function getUpdatePackages({

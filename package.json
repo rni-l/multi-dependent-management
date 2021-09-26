@@ -17,7 +17,7 @@
     "lint-staged": "lint-staged",
     "clean-dist": "node scripts/clean.js",
     "test:unit": "jest",
-    "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/utils.spec.ts"
+    "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/shell.spec.ts"
   },
   "repository": {
     "type": "git",

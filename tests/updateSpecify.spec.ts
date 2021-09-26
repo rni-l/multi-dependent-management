@@ -109,4 +109,56 @@ describe('test lib/updateSpecify.ts', () => {
       ]);
     });
   });
+
+  describe('getUpdatePackagePrompt', () => {
+    it('测试内容输入', async () => {
+      const { formPrompt } = await updateSpecifyUtils.getUpdatePackagePrompt({ show: false });
+      formPrompt.on('run', async () => {
+        await formPrompt.keypress('lodash');
+        await formPrompt.keypress(null, { name: 'down' });
+        await formPrompt.keypress('jquery');
+        await formPrompt.submit();
+      });
+      formPrompt.run().then((res) => [
+        expect(res).toMatchObject({
+          dependencies: 'lodash',
+          devDependencies: 'jquery',
+        }),
+      ]);
+    });
+    it('测试内容选择', async () => {
+      const { selectPrompt } = await updateSpecifyUtils.getUpdatePackagePrompt({ show: false });
+      selectPrompt.on('run', async () => {
+        await selectPrompt.keypress(null, { name: 'down' });
+        await selectPrompt.submit();
+      });
+      selectPrompt.run().then((res) => [
+        expect(res).toBe('否'),
+      ]);
+    });
+  });
+
+  describe('getUpdatePackageTxt', () => {
+    it('将 getUpdatePackagePrompt 获取的数据，进行组装返回', async () => {
+      jest.spyOn(updateSpecifyUtils, 'getUpdatePackagePrompt').mockImplementation(() => ({
+        formPrompt: {
+          run: () => Promise.resolve({
+            dependencies: '0',
+            devDependencies: '1',
+          }),
+        },
+        selectPrompt: {
+          run: () => Promise.resolve('是'),
+        },
+      }));
+      const res = await updateSpecifyUtils.getUpdatePackageTxt();
+      expect(res).toMatchObject({
+        update: {
+          dependencies: '0',
+          devDependencies: '1',
+        },
+        install: '是',
+      });
+    });
+  });
 });
