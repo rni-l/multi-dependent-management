@@ -125,7 +125,7 @@ describe('test lib/upgrade', () => {
       jest.spyOn(utils, 'getConfirmPrompt').mockImplementation(() => ({
         run: () => Promise.resolve(true),
       }));
-      await upgradeUtils.upgrade('/abc');
+      await upgradeUtils.upgrade(utils.findPackageProject('/abc'));
       const p1Data = JSON.parse(vol.readFileSync('/abc/p1/package.json', { encoding: 'utf-8' }) as string);
       expect(p1Data.dependencies.a2).toBe(maxVersion.a2);
       const p2Data = JSON.parse(vol.readFileSync('/abc/p2/package.json', { encoding: 'utf-8' }) as string);

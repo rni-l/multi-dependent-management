@@ -202,7 +202,7 @@ c
       jest.spyOn(shellUtils, 'getConfirmIsExecute').mockImplementation(() => ({
         run: () => Promise.resolve(false),
       }));
-      await shellUtils.executeShell('/abc');
+      await shellUtils.executeShell(utils.findPackageProject('/abc'));
       expect(mockCache).toMatchObject([]);
     });
     it('确认执行 shell 命令', async () => {
@@ -212,7 +212,7 @@ c
       jest.spyOn(shellUtils, 'getConfirmIsExecute').mockImplementation(() => ({
         run: () => Promise.resolve(true),
       }));
-      await shellUtils.executeShell('/abc');
+      await shellUtils.executeShell(utils.findPackageProject('/abc'));
       expect(mockCache).toMatchObject([
         '/abc/p1',
         'a',
@@ -231,7 +231,7 @@ c
         ['b'],
         ['c'],
       ]));
-      await shellUtils.executeShell('/abc');
+      await shellUtils.executeShell(utils.findPackageProject('/abc'));
       expect(mockCache).toMatchObject([
         '/abc/p1',
         'a',

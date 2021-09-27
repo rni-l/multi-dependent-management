@@ -98,7 +98,7 @@ describe('test lib/updateSpecify.ts', () => {
         },
         install: '否',
       })));
-      await updateSpecifyUtils.updateSpecify('/abc');
+      await updateSpecifyUtils.updateSpecify(utils.findPackageProject('/abc'));
       expect(mockCache).toMatchObject([
         '/abc/p1',
         'npm i a4 a5 -S --package-lock-only',

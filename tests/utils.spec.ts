@@ -2,7 +2,15 @@ import { vol } from 'memfs';
 import { omit } from 'lodash';
 import { ProjectConfigType } from '../lib/types';
 import {
-  getPackageConfig, getVersion, findPackageProject, getPackagesConfig, updateProjectDependencies, getConfirmPrompt, commonChangeChoicesToProjectConfig, getMultiSelectPrompt, commonGetChoices,
+  getPackageConfig,
+  getVersion,
+  findPackageProject,
+  getPackagesConfig,
+  updateProjectDependencies,
+  getConfirmPrompt,
+  commonChangeChoicesToProjectConfig,
+  getMultiSelectPrompt,
+  commonGetChoices,
 } from '../lib/utils';
 import { p1, p2, maxVersion } from './mockData/packageJsonData';
 
@@ -60,7 +68,7 @@ describe('test lib/utils.ts', () => {
       vol.reset();
     });
 
-    it('递归目标地址所有目录，获取带有 package.json 的绝对路径', () => {
+    it('递归目标地址所有目录，获取带有 package.json 的绝对路径', async () => {
       vol.fromNestedJSON({
         a: {
           'package.json': 'ok',
@@ -77,7 +85,7 @@ describe('test lib/utils.ts', () => {
           },
         },
       }, '/abc');
-      const res = findPackageProject('/abc');
+      const res = await findPackageProject('/abc');
       expect(res.length).toBe(4);
       expect(res[0]).toBe('/abc/a/d');
       expect(res[1]).toBe('/abc/a');
@@ -85,7 +93,7 @@ describe('test lib/utils.ts', () => {
       expect(res[3]).toBe('/abc/b');
     });
 
-    it('递归目标地址所有目录，过滤 node_modules 目录，获取带有 package.json 的绝对路径', () => {
+    it('递归目标地址所有目录，过滤 node_modules 目录，获取带有 package.json 的绝对路径', async () => {
       vol.fromNestedJSON({
         a: {
           node_modules: {
@@ -106,9 +114,63 @@ describe('test lib/utils.ts', () => {
           },
         },
       }, '/abc');
-      const res = findPackageProject('/abc');
+      const res = await findPackageProject('/abc');
       expect(res.length).toBe(1);
       expect(res[0]).toBe('/abc/b');
+    });
+
+    it('传入 exclude，忽略 b 路径', async () => {
+      vol.fromNestedJSON({
+        a: {
+          'package.json': 'ok',
+          abc: '',
+          d: {
+            'package.json': 'ok',
+          },
+        },
+        bb: {
+          'package.json': 'ok',
+        },
+        b: {
+          'package.json': 'ok',
+          abc: '',
+          d: {
+            'package.json': 'ok',
+          },
+        },
+      }, '/abc');
+      const res = await findPackageProject('/abc', '**/b');
+      expect(res).toMatchObject([
+        '/abc/a/d', '/abc/a', '/abc/b/d', '/abc/bb',
+      ]);
+    });
+    it('传入 exclude，*/b,**/a/**', async () => {
+      vol.fromNestedJSON({
+        a: {
+          'package.json': 'ok',
+          abc: '',
+          d: {
+            'package.json': 'ok',
+          },
+        },
+        bb: {
+          'package.json': 'ok',
+        },
+        b: {
+          'package.json': 'ok',
+          abc: '',
+          d: {
+            'package.json': 'ok',
+          },
+          b: {
+            'package.json': 'ok',
+          },
+        },
+      }, '/abc');
+      const res = await findPackageProject('/abc', '**/b,**/a,**/a/**');
+      expect(res).toMatchObject([
+        '/abc/b/d', '/abc/bb',
+      ]);
     });
   });
 

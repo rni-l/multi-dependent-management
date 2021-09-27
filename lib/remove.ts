@@ -5,7 +5,6 @@ import {
 } from './types';
 import {
   getPackagesConfig,
-  findPackageProject,
   getMultiSelectPrompt,
 } from './utils';
 import * as removeUtils from './remove';
@@ -79,10 +78,10 @@ export function removeProjectDependencies(list: ProjectConfigType[], removePacka
   });
 }
 
-export async function remove(targetPath: string): Promise<void> {
+export async function remove(paths: string[]): Promise<void> {
   const removePackages = await getRemovePackages();
   console.log(chalk.red(`要移除的依赖有：\n  ${removePackages.join('\n  ')}`));
-  const list = await getPackagesConfig(findPackageProject(targetPath));
+  const list = await getPackagesConfig(paths);
   const filterList = list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[];
   const res: ProjectConfigType[] = await getMultiSelectPrompt(
     filterList,

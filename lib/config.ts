@@ -1,1 +1,1 @@
-export const ignoreNames = ['node_modules'];
+export const ignoreNames = ['**/node_modules', '**/node_modules/**'];

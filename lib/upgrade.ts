@@ -5,7 +5,6 @@ import {
 } from './types';
 import {
   getPackagesConfig,
-  findPackageProject,
   getConfirmPrompt,
   updateProjectDependencies,
   getMultiSelectPrompt,
@@ -50,9 +49,9 @@ export function changeChoicesToProjectConfig(selectNames: string[],
   }, []);
 }
 
-export async function upgrade(targetPath: string): Promise<void> {
+export async function upgrade(paths: string[]): Promise<void> {
   const spinner = ora('分析中...').start();
-  const list = await getPackagesConfig(findPackageProject(targetPath), true);
+  const list = await getPackagesConfig(paths, true);
   spinner.succeed('分析成功\t');
   // 为了 unit test 更方便 mock，所有这样写
   const filterList = list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[];

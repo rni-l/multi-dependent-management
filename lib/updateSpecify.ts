@@ -4,7 +4,6 @@ import {
 } from './types';
 import {
   getPackagesConfig,
-  findPackageProject,
   getMultiSelectPrompt,
 } from './utils';
 import * as updateSpecifyUtils from './updateSpecify';
@@ -82,7 +81,7 @@ export function updateProjectDependencies(
   task.forEach((v) => v());
 }
 
-export async function updateSpecify(targetPath: string): Promise<void> {
+export async function updateSpecify(paths: string[]): Promise<void> {
   const { update, install } = await updateSpecifyUtils.getUpdatePackageTxt();
   const { dependencies, devDependencies } = getUpdatePackages(update);
   console.log(`要更新的依赖有：\n
@@ -91,7 +90,7 @@ export async function updateSpecify(targetPath: string): Promise<void> {
   devDependencies
     ${devDependencies.join('\n  ')}
 `);
-  const list = await getPackagesConfig(findPackageProject(targetPath));
+  const list = await getPackagesConfig(paths);
   const filterList = list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[];
   const res: ProjectConfigType[] = await getMultiSelectPrompt(
     filterList,

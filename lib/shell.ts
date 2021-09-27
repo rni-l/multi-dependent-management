@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { ProjectConfigType } from './types';
-import { findPackageProject, getMultiSelectPrompt, getPackagesConfig } from './utils';
+import { getMultiSelectPrompt, getPackagesConfig } from './utils';
 import * as shellUtils from './shell';
 
 const { Confirm } = require('enquirer');
@@ -104,8 +104,8 @@ ${independentCommanders[i]?.join('\n')}
 `).join('\n');
 }
 
-export async function getMultiList(targetPath: string) {
-  const list = await getPackagesConfig(findPackageProject(targetPath));
+export async function getMultiList(paths: string[]) {
+  const list = await getPackagesConfig(paths);
   const filterList = list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[];
   const selectList: ProjectConfigType[] = await getMultiSelectPrompt(
     filterList,
@@ -116,8 +116,8 @@ export async function getMultiList(targetPath: string) {
   return selectList;
 }
 
-export async function executeShell(targetPath: string) {
-  const selectList = await shellUtils.getMultiList(targetPath);
+export async function executeShell(paths: string[]) {
+  const selectList = await shellUtils.getMultiList(paths);
   const commonShell = await shellUtils.getInput({
     message: `${INPUT_TXT}(选择的项目都会执行)`,
   }).run();

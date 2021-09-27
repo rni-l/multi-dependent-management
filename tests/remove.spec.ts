@@ -142,7 +142,7 @@ describe('test lib/remove.ts', () => {
       jest.spyOn(removeUtils, 'getRemovePackageTxt').mockImplementationOnce(() => ({
         run: () => Promise.resolve('a1, a3, a5'),
       }));
-      await removeUtils.remove('/abc');
+      await removeUtils.remove(utils.findPackageProject('/abc'));
       const p1Data = JSON.parse(vol.readFileSync('/abc/p1/package.json', { encoding: 'utf-8' }) as string);
       expect(p1Data.dependencies.a1).toBe(undefined);
       expect(p1Data.dependencies.a2).toBe(p1.dependencies.a2);

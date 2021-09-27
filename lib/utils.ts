@@ -11,6 +11,7 @@ import {
 } from './config';
 
 const { Confirm, MultiSelect } = require('enquirer');
+const minimatch = require('minimatch');
 
 export function getVersion(version: string): string {
   return semver.coerce(version).version;
@@ -31,17 +32,21 @@ export function getPackageConfig(diffResult: { op: string; path: Array<string | 
   };
 }
 
-export function findPackageProject(targetPath: string): string[] {
+export function findPackageProject(targetPath: string, exclude = ''): string[] {
+  const excludes = [
+    ...exclude.split(',').map((v) => v.trim()),
+    ...ignoreNames,
+  ];
   const fileStat = fs.statSync(targetPath);
   const nodeProjects: string[] = [];
   if (!fileStat.isDirectory()) return [];
+  const isIgnore = excludes.some((excludePatten) => minimatch(targetPath, excludePatten));
   fs.readdirSync(targetPath).forEach((v) => {
-    if (ignoreNames.includes(v)) return;
     const curPath = `${targetPath}/${v}`;
-    if (v === 'package.json') {
+    if (!isIgnore && v === 'package.json') {
       nodeProjects.push(targetPath);
     }
-    const childNodeProjects = findPackageProject(curPath);
+    const childNodeProjects = findPackageProject(curPath, exclude);
     nodeProjects.push(...childNodeProjects);
   });
   return nodeProjects;
