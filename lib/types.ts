@@ -13,6 +13,12 @@ export type ObjectKey<T> = {
 
 export type ProjectConfigType = {
   cwd: string;
-  packageJson: ObjectKey<any>;
+  packageJson: {
+    [key: string]: any;
+    name: string;
+    version: string;
+    dependencies?: ObjectKey<string>;
+    devDependencies?: ObjectKey<string>;
+  };
   packages: ProjectPackageType[]
 }

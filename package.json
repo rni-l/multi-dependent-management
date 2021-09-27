@@ -17,7 +17,7 @@
     "lint-staged": "lint-staged",
     "clean-dist": "node scripts/clean.js",
     "test:unit": "jest",
-    "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/utils.spec.ts"
+    "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/diff.spec.ts"
   },
   "repository": {
     "type": "git",
@@ -42,12 +42,9 @@
     }
   },
   "lint-staged": {
-    "lib/**/*": [
+    "{lib,tests}/**/*": [
       "npm run lint",
-      "git add"
-    ],
-    "tests/**/*.{js,ts}": [
-      "npm run lint",
+      "npm run test:unit",
       "git add"
     ]
   },
@@ -56,10 +53,11 @@
     "commander": "^8.2.0",
     "depcheck": "^1.4.2",
     "enquirer": "^2.3.6",
-    "globby": "^12.0.2",
+    "enquirer-editor": "^1.0.0",
     "inquirer": "^8.1.5",
     "just-diff": "^3.1.1",
     "lodash": "^4.17.21",
+    "minimatch": "^3.0.4",
     "minimist": "^1.2.5",
     "npm-check": "^5.9.2",
     "npm-check-updates": "^11.8.5",
@@ -74,6 +72,7 @@
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-angular": "^13.1.0",
     "@types/jest": "^27.0.1",
+    "@types/lodash": "^4.14.174",
     "@types/node": "^16.9.2",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",

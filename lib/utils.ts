@@ -10,13 +10,18 @@ import {
   ignoreNames,
 } from './config';
 
-const { Confirm } = require('enquirer');
+const { Confirm, MultiSelect } = require('enquirer');
+const minimatch = require('minimatch');
 
-function getVersion(version: string): string {
+export function getVersion(version: string): string {
   return semver.coerce(version).version;
 }
 
-function getPackageConfig(diffResult: { op: string; path: Array<string | number>; value: any },
+export function semverLt(left: string, right: string) {
+  return semver.lt(getVersion(left), getVersion(right));
+}
+
+export function getPackageConfig(diffResult: { op: string; path: Array<string | number>; value: any },
   dependencies: ObjectKey<string>, isDev: boolean): ProjectPackageType {
   const name = diffResult.path[0] as string;
   const oldVersion = dependencies[name];
@@ -31,23 +36,27 @@ function getPackageConfig(diffResult: { op: string; path: Array<string | number>
   };
 }
 
-function findPackageProject(targetPath: string): string[] {
+export function findPackageProject(targetPath: string, exclude = ''): string[] {
+  const excludes = [
+    ...exclude.split(',').map((v) => v.trim()),
+    ...ignoreNames,
+  ];
   const fileStat = fs.statSync(targetPath);
   const nodeProjects: string[] = [];
   if (!fileStat.isDirectory()) return [];
+  const isIgnore = excludes.some((excludePatten) => minimatch(targetPath, excludePatten));
   fs.readdirSync(targetPath).forEach((v) => {
-    if (ignoreNames.includes(v)) return;
     const curPath = `${targetPath}/${v}`;
-    if (v === 'package.json') {
+    if (!isIgnore && v === 'package.json') {
       nodeProjects.push(targetPath);
     }
-    const childNodeProjects = findPackageProject(curPath);
+    const childNodeProjects = findPackageProject(curPath, exclude);
     nodeProjects.push(...childNodeProjects);
   });
   return nodeProjects;
 }
 
-async function getPackagesConfig(targetPaths: string[], isCheckUpdate?: boolean): Promise<(ProjectConfigType | boolean)[]> {
+export async function getPackagesConfig(targetPaths: string[], isCheckUpdate?: boolean): Promise<(ProjectConfigType | boolean)[]> {
   const checkList: Promise<ProjectConfigType | boolean>[] = targetPaths
     // eslint-disable-next-line no-async-promise-executor
     .map((v) => new Promise(async (resolve) => {
@@ -93,7 +102,7 @@ async function getPackagesConfig(targetPaths: string[], isCheckUpdate?: boolean)
   return Promise.all(checkList);
 }
 
-function getConfirmPrompt(list: ProjectConfigType[]): any {
+export function getConfirmPrompt(list: ProjectConfigType[]): any {
   return new Confirm({
     name: 'data',
     message: `
@@ -109,27 +118,75 @@ ${v.packages.map((v2) => `  ${v2.name}@${v2.oldVersion} -> ${v2.newVersion}；${
   });
 }
 
-function updateProjectDependencies(list: ProjectConfigType[]): void {
+export function updateProjectDependencies(list: ProjectConfigType[]): void {
   list.forEach(({ cwd, packageJson, packages }) => {
     const data = packageJson;
     packages.forEach(({ newVersion, name, isDevDependencies }) => {
-      if (isDevDependencies) {
+      if (isDevDependencies && data.devDependencies) {
         data.devDependencies[name] = newVersion;
-      } else {
+      } else if (!isDevDependencies && data.dependencies) {
         data.dependencies[name] = newVersion;
       }
     });
-    console.log(chalk.blue(`正在升级 ${cwd}`));
+    // console.log(chalk.blue(`正在升级 ${cwd}`));
     fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(data, null, '  '));
     console.log(chalk.green(`${cwd} 升级完成~`));
   });
 }
 
-export {
-  getPackageConfig,
-  getPackagesConfig,
-  getVersion,
-  findPackageProject,
-  getConfirmPrompt,
-  updateProjectDependencies,
-};
+type ChoiceItem = { name: string; cwd: string; }
+type CommonGetChoices = (list: ProjectConfigType[], ...args: any[]) => any[]
+type CommonChangeChoicesToProjectConfig = (
+  selectNames: string[],
+  rawProjectConfig: ProjectConfigType[],
+  ...args: any[]
+) => any[]
+
+export function commonGetChoices(list: ProjectConfigType[]): ChoiceItem[] {
+  return list.reduce((acc: ChoiceItem[], v) => {
+    acc.push({
+      name: `${v.cwd}`,
+      cwd: v.cwd,
+    });
+    return acc;
+  }, []);
+}
+
+export function commonChangeChoicesToProjectConfig(
+  selectNames: string[],
+  rawProjectConfig: ProjectConfigType[],
+): ProjectConfigType[] {
+  const choices = commonGetChoices(rawProjectConfig);
+  return selectNames.reduce((acc: ProjectConfigType[], v) => {
+    const choicesObj = choices.find((v2) => v === v2.name)!;
+    const item = rawProjectConfig.find((v2) => v2.cwd === choicesObj.cwd)!;
+    acc.push(item);
+    return acc;
+  }, []);
+}
+
+export function getMultiSelectPrompt(
+  list: ProjectConfigType[],
+  {
+    getChoices,
+    changeChoicesToProjectConfig,
+    opts,
+  }: {
+    getChoices?: CommonGetChoices,
+    changeChoicesToProjectConfig?: CommonChangeChoicesToProjectConfig,
+    opts?: any
+  },
+  ...args: any[]
+): any {
+  const choices = getChoices ? getChoices(list, ...args) : commonGetChoices(list);
+  return new MultiSelect(
+    {
+      ...opts,
+      choices,
+      name: 'target',
+      result(names: string[]) {
+        return changeChoicesToProjectConfig ? changeChoicesToProjectConfig(names, list, ...args) : commonChangeChoicesToProjectConfig(names, list);
+      },
+    },
+  );
+}

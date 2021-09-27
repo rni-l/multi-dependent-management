@@ -1,7 +1,7 @@
 // const argv = require('minimist')(process.argv.slice(2));
 
 // console.log(argv);
-
+const minimatch = require('minimatch');
 const { Command } = require('commander');
 
 const program = new Command();
@@ -32,10 +32,17 @@ const program = new Command();
 // Examples:
 //   $ deploy exec sequential
 //   $ deploy exec async`);
-program.command('upgrade')
-  .description('用于升级项目的依赖')
-  .option('-p, --path <mode>', '要递归处理的路径')
-  .action((env, options) => {
-    console.log(env.path);
-  });
-program.parse(process.argv);
+// program.command('upgrade')
+//   .description('用于升级项目的依赖')
+//   .option('-p, --path <mode>', '要递归处理的路径')
+//   .action((env, options) => {
+//     console.log(env.path);
+//   });
+// program.parse(process.argv);
+
+console.log(minimatch('/abc/b', '**/b'));
+console.log(minimatch('/abc/b/c', '**/b'));
+console.log(minimatch('/abc/b/a', '**/b'));
+console.log(minimatch('/b', '**/b'));
+console.log(minimatch('/a/c/b/b', '**/b'));
+console.log(minimatch('/a/c/b/b', '**/b/**'));

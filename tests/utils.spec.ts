@@ -2,7 +2,15 @@ import { vol } from 'memfs';
 import { omit } from 'lodash';
 import { ProjectConfigType } from '../lib/types';
 import {
-  getPackageConfig, getVersion, findPackageProject, getPackagesConfig, updateProjectDependencies, getConfirmPrompt,
+  getPackageConfig,
+  getVersion,
+  findPackageProject,
+  getPackagesConfig,
+  updateProjectDependencies,
+  getConfirmPrompt,
+  commonChangeChoicesToProjectConfig,
+  getMultiSelectPrompt,
+  commonGetChoices,
 } from '../lib/utils';
 import { p1, p2, maxVersion } from './mockData/packageJsonData';
 
@@ -60,7 +68,7 @@ describe('test lib/utils.ts', () => {
       vol.reset();
     });
 
-    it('递归目标地址所有目录，获取带有 package.json 的绝对路径', () => {
+    it('递归目标地址所有目录，获取带有 package.json 的绝对路径', async () => {
       vol.fromNestedJSON({
         a: {
           'package.json': 'ok',
@@ -77,7 +85,7 @@ describe('test lib/utils.ts', () => {
           },
         },
       }, '/abc');
-      const res = findPackageProject('/abc');
+      const res = await findPackageProject('/abc');
       expect(res.length).toBe(4);
       expect(res[0]).toBe('/abc/a/d');
       expect(res[1]).toBe('/abc/a');
@@ -85,7 +93,7 @@ describe('test lib/utils.ts', () => {
       expect(res[3]).toBe('/abc/b');
     });
 
-    it('递归目标地址所有目录，过滤 node_modules 目录，获取带有 package.json 的绝对路径', () => {
+    it('递归目标地址所有目录，过滤 node_modules 目录，获取带有 package.json 的绝对路径', async () => {
       vol.fromNestedJSON({
         a: {
           node_modules: {
@@ -106,9 +114,63 @@ describe('test lib/utils.ts', () => {
           },
         },
       }, '/abc');
-      const res = findPackageProject('/abc');
+      const res = await findPackageProject('/abc');
       expect(res.length).toBe(1);
       expect(res[0]).toBe('/abc/b');
+    });
+
+    it('传入 exclude，忽略 b 路径', async () => {
+      vol.fromNestedJSON({
+        a: {
+          'package.json': 'ok',
+          abc: '',
+          d: {
+            'package.json': 'ok',
+          },
+        },
+        bb: {
+          'package.json': 'ok',
+        },
+        b: {
+          'package.json': 'ok',
+          abc: '',
+          d: {
+            'package.json': 'ok',
+          },
+        },
+      }, '/abc');
+      const res = await findPackageProject('/abc', '**/b');
+      expect(res).toMatchObject([
+        '/abc/a/d', '/abc/a', '/abc/b/d', '/abc/bb',
+      ]);
+    });
+    it('传入 exclude，*/b,**/a/**', async () => {
+      vol.fromNestedJSON({
+        a: {
+          'package.json': 'ok',
+          abc: '',
+          d: {
+            'package.json': 'ok',
+          },
+        },
+        bb: {
+          'package.json': 'ok',
+        },
+        b: {
+          'package.json': 'ok',
+          abc: '',
+          d: {
+            'package.json': 'ok',
+          },
+          b: {
+            'package.json': 'ok',
+          },
+        },
+      }, '/abc');
+      const res = await findPackageProject('/abc', '**/b,**/a,**/a/**');
+      expect(res).toMatchObject([
+        '/abc/b/d', '/abc/bb',
+      ]);
     });
   });
 
@@ -276,6 +338,97 @@ describe('test lib/utils.ts', () => {
       expect(p2Data.dependencies.a1).toBe(maxVersion.a1);
       expect(p2Data.dependencies.a2).toBe(maxVersion.a2);
       expect(p2Data.devDependencies.a3).toBe(maxVersion.a3);
+    });
+  });
+
+  describe('', () => {
+    beforeEach(() => {
+      vol.reset();
+      vol.fromNestedJSON({
+        p1: {
+          'package.json': JSON.stringify(p1),
+        },
+        p2: {
+          'package.json': JSON.stringify(p2),
+        },
+      }, '/abc');
+    });
+    describe('commonGetChoices', () => {
+      it('获取 enquirer MultiSelect 的选项', async () => {
+        const list = (await getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
+        const res = commonGetChoices(list);
+        expect(res).toMatchObject([
+          {
+            name: '/abc/p1',
+            cwd: '/abc/p1',
+          },
+          {
+            name: '/abc/p2',
+            cwd: '/abc/p2',
+          },
+        ]);
+      });
+    });
+
+    describe('commonChangeChoicesToProjectConfig', () => {
+      it('将 MultiSelect 选项值转为包信息', async () => {
+        const list = (await getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
+        const res = commonChangeChoicesToProjectConfig(
+          ['/abc/p1', '/abc/p2'],
+          list,
+        );
+        expect(res).toMatchObject(list);
+      });
+    });
+
+    describe('getMultiSelectPrompt', () => {
+      it('将 MultiSelect 选项值转为包信息', async () => {
+        const list = (await getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
+        const prompt = getMultiSelectPrompt(
+          list,
+          {
+            opts: { show: false, message: '选择要更新对应依赖的项目' },
+          },
+        );
+        expect(prompt.options.message).toBe('选择要更新对应依赖的项目');
+        prompt.on('run', async () => {
+          await prompt.keypress(' ');
+          await prompt.keypress(null, { name: 'down' });
+          await prompt.keypress(' ');
+          await prompt.submit();
+        });
+        prompt.run()
+          .then((res) => {
+            expect(res).toMatchObject([
+              {
+                cwd: '/abc/p1',
+                packageJson: p1,
+                packages: [],
+              },
+              {
+                cwd: '/abc/p2',
+                packageJson: p2,
+                packages: [],
+              },
+            ]);
+          });
+      });
+      it('没有选择，返回 []', async () => {
+        const list = (await getPackagesConfig(['/abc/p1', '/abc/p2'])) as ProjectConfigType[];
+        const prompt = getMultiSelectPrompt(
+          list,
+          {
+            opts: { show: false },
+          },
+        );
+        prompt.on('run', async () => {
+          await prompt.submit();
+        });
+        prompt.run()
+          .then((res) => {
+            expect(res).toMatchObject([]);
+          });
+      });
     });
   });
 });

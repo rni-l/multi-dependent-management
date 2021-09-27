@@ -2,9 +2,9 @@
   "name": "a1",
   "version": "1.0.0",
   "dependencies": {
-    "vue": "^2.6.14"
+    "vue": "v2.6.14"
   },
   "devDependencies": {
-    "npm": "^7.13.0"
+    "npm": "^7.12.0"
   }
 }
