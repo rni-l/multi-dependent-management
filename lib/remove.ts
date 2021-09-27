@@ -28,7 +28,8 @@ type ChoiceItem = { name: string; cwd: string; }
 export function getNotExistDependenciesTxt(item: ProjectConfigType, removePackages: string[]): string {
   const { dependencies, devDependencies } = item.packageJson;
   return removePackages.reduce((acc: string[], v) => {
-    if (!dependencies[v] && !devDependencies[v]) {
+    if ((!dependencies || !dependencies[v])
+        && (!devDependencies || !devDependencies[v])) {
       acc.push(v);
     }
     return acc;
@@ -65,10 +66,10 @@ export function removeProjectDependencies(list: ProjectConfigType[], removePacka
   list.forEach(({ cwd, packageJson }) => {
     const data = packageJson;
     removePackages.forEach((v) => {
-      if (data.dependencies[v]) {
+      if (data.dependencies && data.dependencies[v]) {
         delete data.dependencies[v];
       }
-      if (data.devDependencies[v]) {
+      if (data.devDependencies && data.devDependencies[v]) {
         delete data.devDependencies[v];
       }
     });
@@ -92,7 +93,6 @@ export async function remove(paths: string[]): Promise<void> {
     },
     removePackages,
   ).run();
-  // removeUtils.getMultiSelectPrompt(filterList, removePackages).run();
   removeProjectDependencies(res, removePackages);
   console.log(chalk.red('\n全部移除成功!!!'));
 }

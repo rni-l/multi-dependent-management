@@ -17,6 +17,10 @@ export function getVersion(version: string): string {
   return semver.coerce(version).version;
 }
 
+export function semverLt(left: string, right: string) {
+  return semver.lt(getVersion(left), getVersion(right));
+}
+
 export function getPackageConfig(diffResult: { op: string; path: Array<string | number>; value: any },
   dependencies: ObjectKey<string>, isDev: boolean): ProjectPackageType {
   const name = diffResult.path[0] as string;
@@ -118,13 +122,13 @@ export function updateProjectDependencies(list: ProjectConfigType[]): void {
   list.forEach(({ cwd, packageJson, packages }) => {
     const data = packageJson;
     packages.forEach(({ newVersion, name, isDevDependencies }) => {
-      if (isDevDependencies) {
+      if (isDevDependencies && data.devDependencies) {
         data.devDependencies[name] = newVersion;
-      } else {
+      } else if (!isDevDependencies && data.dependencies) {
         data.dependencies[name] = newVersion;
       }
     });
-    console.log(chalk.blue(`正在升级 ${cwd}`));
+    // console.log(chalk.blue(`正在升级 ${cwd}`));
     fs.writeFileSync(`${cwd}/package.json`, JSON.stringify(data, null, '  '));
     console.log(chalk.green(`${cwd} 升级完成~`));
   });

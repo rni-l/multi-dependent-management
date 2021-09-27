@@ -7,6 +7,7 @@ import { upgrade } from './upgrade';
 import { updateSpecify } from './updateSpecify';
 import { executeShell } from './shell';
 import { findPackageProject } from './utils';
+import { diff } from './diff';
 
 function getCommonOption(target: Command) {
   return target.option('-p, --path <target path>', '要递归处理的路径')
@@ -58,6 +59,17 @@ getCommonOption(
     console.log('请输入要处理的路径');
   } else {
     executeShell(getPaths(env));
+  }
+});
+
+getCommonOption(
+  program.command('diff')
+    .description('执行 shell'),
+).action((env) => {
+  if (!env.path) {
+    console.log('请输入要处理的路径');
+  } else {
+    diff(getPaths(env));
   }
 });
 
