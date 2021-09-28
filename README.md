@@ -2,9 +2,7 @@
 
 >基于 node.js 的命令行工具，用于管理多个项目的依赖。
 
-![](https://img.shields.io/npm/l/multi-dependent-management)
-
-
+![](https://img.shields.io/npm/l/multi-dependent-management)![](https://app.travis-ci.com/rni-l/multi-dependent-management.svg?branch=master)[![Coverage Status](https://coveralls.io/repos/github/rni-l/multi-dependent-management/badge.svg?branch=master)](https://coveralls.io/github/rni-l/multi-dependent-management?branch=master)
 
 ## 概述
 
