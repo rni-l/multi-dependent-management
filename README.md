@@ -2,15 +2,16 @@
 
 >基于 node.js 的命令行工具，用于管理多个项目的依赖。
 
-![](https://img.shields.io/npm/l/multi-dependent-management)![](https://app.travis-ci.com/rni-l/multi-dependent-management.svg?branch=master)[![Coverage Status](https://coveralls.io/repos/github/rni-l/multi-dependent-management/badge.svg?branch=master)](https://coveralls.io/github/rni-l/multi-dependent-management?branch=master)
+![](https://img.shields.io/npm/l/multi-dependent-management) ![](https://app.travis-ci.com/rni-l/multi-dependent-management.svg?branch=master) ![Coverage Status](https://coveralls.io/repos/github/rni-l/multi-dependent-management/badge.svg) ![](https://img.shields.io/github/languages/code-size/rni-l/multi-dependent-management)
 
 ## 概述
 
 该工具是用于管理多个项目的依赖，根据你输入的路径，递归查询所有的 `package.json`（忽略 `node_modules` 文件），进行依赖管理：
 
-1. 依赖版本升级（基于 [npm-check-updates](https://github.com/raineorshine/npm-check-updates)）
-2. 依赖移除
-3. 依赖添加/变更
+1. 依赖批量版本升级（基于 [npm-check-updates](https://github.com/raineorshine/npm-check-updates)）
+2. 依赖批量移除
+3. 依赖批量添加/变更
+4. 查看多项目内的依赖差异
 
 
 
@@ -116,16 +117,15 @@ mdm update -p /demo -e /demo/a/**,**/b
 
 ## 应用场景
 
-要开发这个工具的原因是因为在日程开发中，有大量类似的业务管理系统，这些系统都使用内部的组件库进行搭建的：
+开发这个工具的原因是因为在日程开发中，有大量类似的业务管理系统，这些系统都使用内部的组件库进行搭建的：
 
 ![](./docs/assets/p1.jpg)
 
-目前大概有 20 多个这样的系统，分别使用了不同的公共库。如果公共库出现了问题或者有新的功能迭代，系统的更新操作就很麻烦，需要一个个项目执行更新命令，所以我开发了这个工具，对多个项目快速进行依赖变更。
+目前有多个这样的系统，分别使用了不同的公共库。如果公共库出现了问题或者有新的功能迭代，系统的更新操作就很麻烦，需要一个个项目执行更新命令，所以开发了这个工具，对多个项目快速进行依赖变更。
 
 ## TODO
 
 1. ~~添加操作命令的配置项，比如文件匹配限制~~
 2. ~~添加命令行操作，可以对项目批量执行 shell 命令~~
 3. ~~添加依赖差异查看命令，查询匹配的项目，查看项目内每个依赖和当前最高版本的差异~~
-4. 添加依赖移动，可以将项目的 dependencies 和 devDependencies 的依赖位置进行移动
 5. 添加接口文档，可以在代码使用该库
