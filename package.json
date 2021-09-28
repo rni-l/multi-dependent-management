@@ -78,6 +78,7 @@
     "@typescript-eslint/parser": "^4.31.1",
     "babel-jest": "^27.2.0",
     "commit-msg": "^0.2.3",
+    "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.32.0",
