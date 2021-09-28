@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/rni-l/multi-dependent-management/compare/v0.2.0...v0.3.0) (2021-09-28)
+
+
+### Features
+
+* 优化 upgrade 交互流程 ([f42a597](https://github.com/rni-l/multi-dependent-management/commit/f42a597b56e6431fd81353127406cf08e0b7e417))
+
 ## [0.2.0](https://github.com/rni-l/multi-dependent-management/compare/v0.1.1...v0.2.0) (2021-09-28)
 
 
