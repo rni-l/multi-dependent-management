@@ -2,6 +2,10 @@
 
 >基于 node.js 的命令行工具，用于管理多个项目的依赖。
 
+![](https://img.shields.io/npm/l/multi-dependent-management)
+
+
+
 ## 概述
 
 该工具是用于管理多个项目的依赖，根据你输入的路径，递归查询所有的 `package.json`（忽略 `node_modules` 文件），进行依赖管理：
