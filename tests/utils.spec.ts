@@ -86,11 +86,12 @@ describe('test lib/utils.ts', () => {
         },
       }, '/abc');
       const res = await findPackageProject('/abc');
-      expect(res.length).toBe(4);
-      expect(res[0]).toBe('/abc/a/d');
-      expect(res[1]).toBe('/abc/a');
-      expect(res[2]).toBe('/abc/b/d');
-      expect(res[3]).toBe('/abc/b');
+      expect(res).toMatchObject([
+        '/abc/a/d',
+        '/abc/a',
+        '/abc/b/d',
+        '/abc/b',
+      ]);
     });
 
     it('递归目标地址所有目录，过滤 node_modules 目录，获取带有 package.json 的绝对路径', async () => {
@@ -115,8 +116,9 @@ describe('test lib/utils.ts', () => {
         },
       }, '/abc');
       const res = await findPackageProject('/abc');
-      expect(res.length).toBe(1);
-      expect(res[0]).toBe('/abc/b');
+      expect(res).toMatchObject([
+        '/abc/b',
+      ]);
     });
 
     it('传入 exclude，忽略 b 路径', async () => {

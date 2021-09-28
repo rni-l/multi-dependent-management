@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import path from 'path';
 import program from './commander';
 import { remove } from './remove';
 import { upgrade } from './upgrade';
@@ -11,11 +12,11 @@ import { diff } from './diff';
 
 function getCommonOption(target: Command) {
   return target.option('-p, --path <target path>', '要递归处理的路径')
-    .option('-e --exclude <exclude path>', '要忽略的文件，用“,”隔开');
+    .option('-e --exclude <exclude path,exclude path2,exclude path3>', '要忽略的文件，用“,”隔开，不能带空格');
 }
 
 function getPaths(env: any) {
-  return findPackageProject(env.path, env.exclude);
+  return findPackageProject(path.resolve(env.path), env.exclude);
 }
 
 getCommonOption(
@@ -64,7 +65,7 @@ getCommonOption(
 
 getCommonOption(
   program.command('diff')
-    .description('执行 shell'),
+    .description('查看项目依赖差异'),
 ).action((env) => {
   if (!env.path) {
     console.log('请输入要处理的路径');

@@ -3,12 +3,10 @@ import semver from 'semver';
 import ncu from 'npm-check-updates';
 import { diff } from 'just-diff';
 import chalk from 'chalk';
+import path from 'path';
 import {
   ObjectKey, ProjectPackageType, ProjectConfigType,
 } from './types';
-import {
-  ignoreNames,
-} from './config';
 
 const { Confirm, MultiSelect } = require('enquirer');
 const minimatch = require('minimatch');
@@ -38,15 +36,15 @@ export function getPackageConfig(diffResult: { op: string; path: Array<string | 
 
 export function findPackageProject(targetPath: string, exclude = ''): string[] {
   const excludes = [
-    ...exclude.split(',').map((v) => v.trim()),
-    ...ignoreNames,
+    ...exclude.split(',').map((v) => v.trim()).filter((v) => v),
   ];
   const fileStat = fs.statSync(targetPath);
   const nodeProjects: string[] = [];
   if (!fileStat.isDirectory()) return [];
   const isIgnore = excludes.some((excludePatten) => minimatch(targetPath, excludePatten));
   fs.readdirSync(targetPath).forEach((v) => {
-    const curPath = `${targetPath}/${v}`;
+    if (v.includes('node_modules')) return;
+    const curPath = path.join(targetPath, v);
     if (!isIgnore && v === 'package.json') {
       nodeProjects.push(targetPath);
     }

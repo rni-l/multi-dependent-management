@@ -85,6 +85,86 @@ describe('test lib/upgrade', () => {
     });
   });
 
+  describe('getSelectProjectPaths', () => {
+    it('选择路径', async () => {
+      const selectPaths = await utils.findPackageProject('/abc');
+      const prompt = upgradeUtils.getSelectProjectPaths(selectPaths, { show: false });
+      prompt.on('run', async () => {
+        await prompt.keypress(' ');
+        await prompt.submit();
+      });
+      prompt.run()
+        .then((res) => {
+          expect(res).toMatchObject(['/abc/p1']);
+        });
+    });
+  });
+
+  describe('getMultiSelectProject', () => {
+    it('返回分析后的包信息', async () => {
+      jest.spyOn(upgradeUtils, 'getSelectProjectPaths').mockImplementation((paths: string[]) => ({
+        run: () => Promise.resolve(paths),
+      }));
+      const res = await upgradeUtils.getMultiSelectProject(utils.findPackageProject('/abc'));
+      expect(res).toMatchObject(
+        [
+          {
+            cwd: '/abc/p1',
+            packageJson: p1,
+            packages: [
+              {
+                name: 'a2',
+                oldVersion: '~2.2.0',
+                newVersion: '2.3.3',
+                isUpdate: true,
+                updateType: 'minor',
+                isDevDependencies: false,
+              },
+              {
+                name: 'a3',
+                oldVersion: '1.2.0',
+                newVersion: '2.4.0',
+                isUpdate: true,
+                updateType: 'major',
+                isDevDependencies: true,
+              },
+            ],
+          },
+          {
+            cwd: '/abc/p2',
+            packageJson: p2,
+            packages: [
+              {
+                name: 'a1',
+                oldVersion: '2.0.0',
+                newVersion: '2.1.0',
+                isUpdate: true,
+                updateType: 'minor',
+                isDevDependencies: false,
+              },
+              {
+                name: 'a2',
+                oldVersion: '~2.3.0',
+                newVersion: '2.3.3',
+                isUpdate: true,
+                updateType: 'patch',
+                isDevDependencies: false,
+              },
+              {
+                name: 'a3',
+                oldVersion: '1.2.0',
+                newVersion: '2.4.0',
+                isUpdate: true,
+                updateType: 'major',
+                isDevDependencies: true,
+              },
+            ],
+          },
+        ],
+      );
+    });
+  });
+
   describe('upgrade', () => {
     afterEach(() => {
       jest.resetModules();
@@ -121,6 +201,9 @@ describe('test lib/upgrade', () => {
             ],
           },
         ]),
+      }));
+      jest.spyOn(upgradeUtils, 'getSelectProjectPaths').mockImplementation((paths: string[]) => ({
+        run: () => Promise.resolve(paths),
       }));
       jest.spyOn(utils, 'getConfirmPrompt').mockImplementation(() => ({
         run: () => Promise.resolve(true),

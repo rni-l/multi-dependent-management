@@ -9,6 +9,9 @@ import {
   updateProjectDependencies,
   getMultiSelectPrompt,
 } from './utils';
+import * as upgradeUtils from './upgrade';
+
+const { MultiSelect } = require('enquirer');
 
 type ChoiceItem = { name: string; projectCdw: string; updateName: string; }
 
@@ -49,18 +52,34 @@ export function changeChoicesToProjectConfig(selectNames: string[],
   }, []);
 }
 
-export async function upgrade(paths: string[]): Promise<void> {
+export function getSelectProjectPaths(paths: string[], opts: any = {}) {
+  return new MultiSelect(
+    {
+      ...opts,
+      choices: paths,
+      name: 'target',
+      message: '选择需要更新的项目',
+    },
+  );
+}
+
+export async function getMultiSelectProject(paths: string[]) {
+  const selectPaths = await upgradeUtils.getSelectProjectPaths(paths).run();
   const spinner = ora('分析中...').start();
-  const list = await getPackagesConfig(paths, true);
+  const list = await getPackagesConfig(selectPaths, true);
   spinner.succeed('分析成功\t');
-  // 为了 unit test 更方便 mock，所有这样写
   const filterList = list.filter((v) => typeof v !== 'boolean') as ProjectConfigType[];
+  return filterList;
+}
+
+export async function upgrade(paths: string[]): Promise<void> {
+  const list = await upgradeUtils.getMultiSelectProject(paths);
   const res: ProjectConfigType[] = await getMultiSelectPrompt(
-    filterList,
+    list,
     {
       getChoices,
       changeChoicesToProjectConfig,
-      opts: { message: `需要更新的依赖(${getChoices(filterList).length})` },
+      opts: { message: `需要更新的依赖(${getChoices(list).length})` },
     },
   ).run();
   const res2 = await getConfirmPrompt(res).run();
