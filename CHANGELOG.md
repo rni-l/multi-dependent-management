@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/rni-l/multi-dependent-management/compare/v0.1.1...v0.2.0) (2021-09-28)
+
+
+### Features
+
+* 优化路径匹配功能,添加过滤参数;优化代码结构和单测; ([a19ddf7](https://github.com/rni-l/multi-dependent-management/commit/a19ddf7e71ee19bd322ce02f6b6921c1308ebf65))
+* 添加 diff 功能,可以查看选中项目的依赖差异,并升级其中的最高版本; ([185cff3](https://github.com/rni-l/multi-dependent-management/commit/185cff3aa8514bbc00323d999d701d297df10df1))
+* 添加批量 shell 操作功能;优化 multiSelect 交互代码和单测 ([af6e4fc](https://github.com/rni-l/multi-dependent-management/commit/af6e4fc0c905c95a8ee800cdc7f4864bcaf82cab))
+
 ### 0.1.1 (2021-09-24)
 
 
