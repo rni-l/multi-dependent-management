@@ -17,7 +17,7 @@
     "lint-staged": "lint-staged",
     "clean-dist": "node scripts/clean.js",
     "test:unit": "jest",
-    "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/utils.spec.ts"
+    "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/upgrade.spec.ts"
   },
   "repository": {
     "type": "git",
@@ -51,15 +51,12 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "commander": "^8.2.0",
-    "depcheck": "^1.4.2",
     "enquirer": "^2.3.6",
     "enquirer-editor": "^1.0.0",
     "inquirer": "^8.1.5",
     "just-diff": "^3.1.1",
     "lodash": "^4.17.21",
     "minimatch": "^3.0.4",
-    "minimist": "^1.2.5",
-    "npm-check": "^5.9.2",
     "npm-check-updates": "^11.8.5",
     "ora": "^5.4.1",
     "semver": "^7.3.5",

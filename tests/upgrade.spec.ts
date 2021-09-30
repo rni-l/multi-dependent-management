@@ -1,4 +1,5 @@
 import { vol } from 'memfs';
+import fs from 'fs';
 import { ProjectConfigType } from '../lib/types';
 import * as utils from '../lib/utils';
 import * as upgradeUtils from '../lib/upgrade';
@@ -209,9 +210,9 @@ describe('test lib/upgrade', () => {
         run: () => Promise.resolve(true),
       }));
       await upgradeUtils.upgrade(utils.findPackageProject('/abc'));
-      const p1Data = JSON.parse(vol.readFileSync('/abc/p1/package.json', { encoding: 'utf-8' }) as string);
+      const p1Data = JSON.parse(fs.readFileSync('/abc/p1/package.json', { encoding: 'utf-8' }) as string);
       expect(p1Data.dependencies.a2).toBe(maxVersion.a2);
-      const p2Data = JSON.parse(vol.readFileSync('/abc/p2/package.json', { encoding: 'utf-8' }) as string);
+      const p2Data = JSON.parse(fs.readFileSync('/abc/p2/package.json', { encoding: 'utf-8' }) as string);
       expect(p2Data.devDependencies.a3).toBe(maxVersion.a3);
     });
   });
