@@ -15,63 +15,52 @@ function getCommonOption(target: Command) {
     .option('-e --exclude <exclude path,exclude path2,exclude path3>', '要忽略的文件，用“,”隔开，不能带空格');
 }
 
-function getPaths(env: any) {
-  return findPackageProject(path.resolve(env.path), env.exclude);
+function checkPath(env: any, cb: (target: string[]) => any) {
+  if (!env.path) {
+    console.log('请输入要处理的路径');
+    return;
+  }
+  const targetPath = findPackageProject(path.resolve(env.path), env.exclude);
+  if (targetPath.length) {
+    cb(targetPath);
+  } else {
+    console.log('没找到含有 package.json 项目');
+  }
 }
 
 getCommonOption(
   program.command('upgrade')
     .description('用于升级项目的依赖'),
 ).action((env) => {
-  if (!env.path) {
-    console.log('请输入要处理的路径');
-  } else {
-    upgrade(getPaths(env));
-  }
+  checkPath(env, upgrade);
 });
 
 getCommonOption(
   program.command('remove')
     .description('移除项目依赖'),
 ).action((env) => {
-  if (!env.path) {
-    console.log('请输入要处理的路径');
-  } else {
-    remove(getPaths(env));
-  }
+  checkPath(env, remove);
 });
 
 getCommonOption(
   program.command('update')
     .description('更新项目依赖'),
 ).action((env) => {
-  if (!env.path) {
-    console.log('请输入要处理的路径');
-  } else {
-    updateSpecify(getPaths(env));
-  }
+  checkPath(env, updateSpecify);
 });
 
 getCommonOption(
   program.command('shell')
     .description('执行 shell'),
 ).action((env) => {
-  if (!env.path) {
-    console.log('请输入要处理的路径');
-  } else {
-    executeShell(getPaths(env));
-  }
+  checkPath(env, executeShell);
 });
 
 getCommonOption(
   program.command('diff')
     .description('查看项目依赖差异'),
 ).action((env) => {
-  if (!env.path) {
-    console.log('请输入要处理的路径');
-  } else {
-    diff(getPaths(env));
-  }
+  checkPath(env, diff);
 });
 
 program.parse(process.argv);

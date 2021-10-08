@@ -16,7 +16,7 @@
     "prepare": "husky install",
     "lint-staged": "lint-staged",
     "clean-dist": "node scripts/clean.js",
-    "test:unit": "jest",
+    "test:unit": "jest --passWithNoTests",
     "test:ou": "cross-env JEST_IS_SIMPLE=0  jest tests/upgrade.spec.ts"
   },
   "repository": {
